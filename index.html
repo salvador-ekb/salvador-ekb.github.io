@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salvador | Визитка</title>
+    <style>
+        /* ТЕХНИЧЕСКИЕ СТИЛИ (ИХ ТРОГАТЬ НЕ НУЖНО) */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            background-color: #121212;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .card {
+            max-width: 380px;
+            width: 90%;
+            padding: 40px 25px;
+            text-align: center;
+            background: #1e1e1e;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+        }
+        .avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 0 auto 24px auto;
+            border: 2px solid #333333;
+            overflow: hidden;
+            background: #2a2a2a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666666;
+            font-size: 36px;
+        }
+        .avatar img { width: 100%; height: 100%; object-fit: cover; }
+        h1 { font-size: 26px; margin: 0 0 8px 0; color: #ffffff; font-weight: 600; }
+        .subtitle { font-size: 13px; color: #a0a0a0; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 24px; font-weight: 500; }
+        .description { font-size: 15px; line-height: 1.6; color: #b5b5b5; margin-bottom: 32px; text-align: center; }
+        .links-container { display: flex; flex-direction: column; gap: 14px; }
+        .btn { display: block; padding: 14px; border-radius: 10px; text-decoration: none; font-weight: 500; font-size: 15px; transition: transform 0.2s ease, filter 0.2s ease; }
+        .btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
+        
+        /* Цвета кнопок */
+        .btn-vk { background-color: #0077ff; color: #ffffff; }
+        .btn-tg { background-color: #229ED9; color: #ffffff; }
+        .btn-max { background-color: #7B2CBF; color: #ffffff; }
+        .btn-dzen { background-color: #000000; color: #ffffff; border: 1px solid #333333; }
+    </style>
+</head>
+<body>
+
+    <!-- ========================================================================= -->
+    <!--  ГЛАВНЫЕ НАСТРОЙКИ ВИЗИТКИ (МЕНЯЙТЕ ТЕКСТ И ССЫЛКИ МЕЖДУ КАВЫЧКАМИ) -->
+    <!-- ========================================================================= -->
+    <script>
+        const MY_PANEL = {
+            name: "Сергей", 
+            subtitle: "Фотография • Блог", 
+            description: "Привет! Занимаюсь фотографией и веду свой блог. Открыт к творческим проектам и другим видам интересного сотрудничества.",
+            
+            // ФОТО: когда загрузите аватарку на сайт, поменяйте слово false на true (без кавычек)
+            showPhoto: false, 
+
+            // ССЫЛКИ: вставьте ваши реальные интернет-адреса вместо знака # внутри кавычек
+            links: [
+                { name: "Salvador's Vision (фотография)",          url: "https://vk.com/slvdr_foto",  style: "btn-vk" },
+                { name: "Связаться в Telegram",  url: "https://t.me/Salvador_Ekb",  style: "btn-tg" },
+                { name: "Связаться в Макс",      url: "https://max.ru/u/f9LHodD0cOIUp4wCdV8kGz5sJE1VtofuwWdZ9Cl3CFonyMXC98Pj0dxXDjg",  style: "btn-max" },
+                { name: "Мои тексты в Дзене", url: "https://dzen.ru/poletrazuma_ekb",  style: "btn-dzen" }
+            ]
+        };
+    </script>
+    <!-- ========================================================================= -->
+
+
+    <!-- ТЕХНИЧЕСКАЯ ЧАСТЬ (ОНА СТРОИТ САЙТ НА ОСНОВЕ НАСТРОЕК ВЫШЕ, ЕЁ НЕ ТРОГАЕМ) -->
+    <div class="card">
+        <div class="avatar" id="avatar-box">📸</div>
+        <h1 id="name-box"></h1>
+        <div class="subtitle" id="subtitle-box"></div>
+        <div class="description" id="desc-box"></div>
+        <div class="links-container" id="links-box"></div>
+    </div>
+
+    <script>
+        // Автоматическое заполнение визитки данными из панели настроек
+        document.getElementById('name-box').innerText = MY_PANEL.name;
+        document.getElementById('subtitle-box').innerText = MY_PANEL.subtitle;
+        document.getElementById('desc-box').innerText = MY_PANEL.description;
+        if (MY_PANEL.showPhoto) {
+            document.getElementById('avatar-box').innerHTML = '<img src="avatar.jpg" alt="Avatar">';
+        }
+        const box = document.getElementById('links-box');
+        MY_PANEL.links.forEach(item => {
+            const a = document.createElement('a');
+            a.href = item.url;
+            a.target = "_blank";
+            a.className = `btn ${item.style}`;
+            a.innerText = item.name;
+            box.appendChild(a);
+        });
+    </script>
+</body>
+</html>
