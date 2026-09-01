@@ -53,18 +53,16 @@
         .btn-tg { background-color: #229ED9; color: #ffffff; }
         .btn-max { background-color: #7B2CBF; color: #ffffff; }
         .btn-dzen { background-color: #000000; color: #ffffff; border: 1px solid #333333; }
+        .btn-donate { background-color: #FFD700; color: #000000; } /* Новый стиль для кнопки доната */
     </style>
 </head>
 <body>
 
-    <!-- ========================================================================= -->
-    <!--  ГЛАВНЫЕ НАСТРОЙКИ ВИЗИТКИ (МЕНЯЙТЕ ТЕКСТ И ССЫЛКИ МЕЖДУ КАВЫЧКАМИ) -->
-    <!-- ========================================================================= -->
     <script>
         const MY_PANEL = {
             name: "Сергей", 
             subtitle: "Фотография • Блог", 
-            description: "Привет! Занимаюсь фотографией и веду свой блог. Открыт к творческим проектам и другим видам интересного сотрудничества.",
+            description: "Привет! Занимаюсь фотографией и веду блог на Дзене. Открыт к творческим проектам",
             
             // ФОТО: когда загрузите аватарку на сайт, поменяйте слово false на true (без кавычек)
             showPhoto: true, 
@@ -74,14 +72,11 @@
                 { name: "Salvador's Vision (фотография)",          url: "https://vk.com/slvdr_foto",  style: "btn-vk" },
                 { name: "Связаться в Telegram",  url: "https://t.me/Salvador_Ekb",  style: "btn-tg" },
                 { name: "Связаться в Макс",      url: "https://max.ru/u/f9LHodD0cOIUp4wCdV8kGz5sJE1VtofuwWdZ9Cl3CFonyMXC98Pj0dxXDjg",  style: "btn-max" },
-                { name: "Мои тексты в Дзене", url: "https://dzen.ru/poletrazuma_ekb",  style: "btn-dzen" }
+                { name: "Дзен-канал", url: "https://dzen.ru/poletrazuma_ekb",  style: "btn-dzen" },
+                { name: "Поддержать ₽", url: "https://www.tbank.ru/cf/6VtqD9sZ6Ei",  style: "btn-donate" } /* Новая кнопка */
             ]
         };
     </script>
-    <!-- ========================================================================= -->
-
-
-    <!-- ТЕХНИЧЕСКАЯ ЧАСТЬ (ОНА СТРОИТ САЙТ НА ОСНОВЕ НАСТРОЕК ВЫШЕ, ЕЁ НЕ ТРОГАЕМ) -->
     <div class="card">
         <div class="avatar" id="avatar-box">📸</div>
         <h1 id="name-box"></h1>
