@@ -140,14 +140,18 @@
     }
   }
  
-let isClickBlocked = false; // Флаг блокировки частых кликов
+// Хранилище кнопок, которые сейчас временно заблокированы
+  const blockedButtons = new Set();
 
   async function trackClick(buttonId) {
-    // Если клик уже был менее 2 секунд назад — просто игнорируем его
-    if (isClickBlocked) return;
+    // Если по ЭТОЙ конкретной кнопке уже кликали менее 2 секунд назад — игнорируем
+    if (blockedButtons.has(buttonId)) return;
     
-    isClickBlocked = true;
-    setTimeout(() => { isClickBlocked = false; }, 2000); // Разблокируем через 2 секунды
+    // Блокируем только эту кнопку
+    blockedButtons.add(buttonId);
+    setTimeout(() => {
+      blockedButtons.delete(buttonId); // Через 2 секунды снова разрешаем её нажимать
+    }, 2000);
 
     try {
       await _supabase.from('clicks').insert([
