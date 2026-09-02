@@ -53,7 +53,7 @@
         .btn-tg { background-color: #229ED9; color: #ffffff; }
         .btn-max { background-color: #7B2CBF; color: #ffffff; }
         .btn-dzen { background-color: #000000; color: #ffffff; border: 1px solid #333333; }
-        .btn-donate { background-color: #FFD700; color: #000000; } /* Новый стиль для кнопки доната */
+        .btn-donate { background-color: #FFD700; color: #000000; }
     </style>
 </head>
 <body>
@@ -64,14 +64,10 @@
             subtitle: "Фотография • Блог", 
             description: "Привет! Занимаюсь фотографией и веду блог на Дзене. Открыт к творческим проектам",
             
-            // ФОТО: когда загрузите аватарку на сайт, поменяйте слово false на true (без кавычек)
+            
             showPhoto: true, 
 
-            // ССЫЛКИ: вставьте ваши реальные интернет-адреса вместо знака # внутри кавычек
-            // ВАЖНО ДЛЯ АНАЛИТИКИ: поле "id" — короткий технический код кнопки,
-            // именно он попадёт в таблицу кликов в Supabase. "name" можно менять
-            // как угодно (текст на кнопке), а "id" лучше не трогать, чтобы
-            // статистика по кнопке не "обрывалась" при смене текста.
+            
             links: [
                 { id: "vk",     name: "Salvador's Vision (фотография)", url: "https://vk.com/slvdr_foto",  style: "btn-vk" },
                 { id: "tg",     name: "Связаться в Telegram",           url: "https://t.me/Salvador_Ekb/",  style: "btn-tg" },
@@ -90,7 +86,7 @@
     </div>
 
     <script>
-        // Автоматическое заполнение визитки данными из панели настроек
+        
         document.getElementById('name-box').innerText = MY_PANEL.name;
         document.getElementById('subtitle-box').innerText = MY_PANEL.subtitle;
         document.getElementById('desc-box').innerText = MY_PANEL.description;
@@ -104,8 +100,7 @@
             a.target = "_blank";
             a.className = `btn ${item.style}`;
             a.innerText = item.name;
-            // data-атрибут нужен блоку аналитики ниже, чтобы понять,
-            // по какой именно кнопке кликнули
+            
             a.dataset.trackId = item.id;
             box.appendChild(a);
         });
@@ -115,16 +110,13 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-  // Вставьте сюда ваши скопированные значения (внутри одинарных кавычек)
+  
   const SUPABASE_URL = 'https://dxnlsfvkhbxvviudlcwl.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_PVvVrFoRxuyJddEXlYcyHA_7IazujCl';
 
   const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  // --- session_id: один ID на одно "открытие визитки" ---
-  // sessionStorage живёт, пока не закрыта вкладка/браузер. Если человек
-  // отсканирует QR заново в новый раз — будет новый session_id, и это
-  // корректно посчитается как новый визит.
+  
   function getSessionId() {
     let id = sessionStorage.getItem('sid');
     if (!id) {
@@ -136,7 +128,7 @@
 
   const sessionId = getSessionId();
 
-  // --- Трекинг визита ---
+  
   async function trackVisit() {
     try {
       await _supabase.from('visits').insert([
@@ -147,11 +139,11 @@
         }
       ]);
     } catch (e) {
-      // Ошибки глушатся, сайт ни при каких условиях не зависнет
+      
     }
   }
 
-  // --- Трекинг клика по кнопке ---
+  
   async function trackClick(buttonId) {
     try {
       await _supabase.from('clicks').insert([
@@ -161,13 +153,11 @@
         }
       ]);
     } catch (e) {
-      // Ошибки глушатся, сайт ни при каких условиях не зависнет
+      
     }
   }
 
-  // Вешаем обработчик реального клика (не touchmove/скролл) на каждую кнопку.
-  // Клик логируется, но НЕ блокирует переход по ссылке — сайт открывается
-  // как обычно, даже если запрос в Supabase не успел уйти или упал с ошибкой.
+  
   document.querySelectorAll('.btn').forEach(function (btn) {
     btn.addEventListener('click', function () {
       trackClick(btn.dataset.trackId);
