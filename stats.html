@@ -39,11 +39,11 @@
     
     <div class="stats-summary">
       <div class="card">
-        <div>Просмотров страницы</div>
+        <div>Уникальных просмотров</div>
         <div class="card-number" id="views-count">0</div>
       </div>
       <div class="card">
-        <div>Кликов по кнопкам</div>
+        <div>Всего кликов по кнопкам</div>
         <div class="card-number" id="clicks-count">0</div>
       </div>
     </div>
@@ -69,7 +69,7 @@
   const SUPABASE_URL = 'https://dxnlsfvkhbxvviudlcwl.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_PVvVrFoRxuyJddEXlYcyHA_7IazujCl';
   
-  // 2. ПРИДУМАЙТЕ ПАРОЛЬ ДЛЯ ВХОДА (по умолчанию 123):
+  // 2. ПАРОЛЬ ДЛЯ ВХОДА:
   const MY_PASSWORD = 'stat.tarlton'; 
 
   // Словарь для красивого отображения названий кнопок
@@ -108,7 +108,11 @@
       return;
     }
 
-    document.getElementById('views-count').innerText = visitsData.length;
+    // Считаем только уникальные session_id для просмотров
+    const uniqueVisits = new Set(visitsData.map(v => v.session_id)).size;
+    document.getElementById('views-count').innerText = uniqueVisits;
+    
+    // Клики считаем все подряд
     document.getElementById('clicks-count').innerText = clicksData.length;
 
     // Объединяем визиты и клики в один список
