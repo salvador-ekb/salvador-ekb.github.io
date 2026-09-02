@@ -57,17 +57,15 @@
     </style>
 </head>
 <body>
-
+ 
     <script>
         const MY_PANEL = {
             name: "Сергей", 
             subtitle: "Фотография • Блог", 
             description: "Привет! Занимаюсь фотографией и веду блог на Дзене. Открыт к творческим проектам",
             
-            
             showPhoto: true, 
-
-            
+ 
             links: [
                 { id: "vk",     name: "Salvador's Vision (фотография)", url: "https://vk.com/slvdr_foto",  style: "btn-vk" },
                 { id: "tg",     name: "Связаться в Telegram",           url: "https://t.me/Salvador_Ekb/",  style: "btn-tg" },
@@ -84,9 +82,8 @@
         <div class="description" id="desc-box"></div>
         <div class="links-container" id="links-box"></div>
     </div>
-
+ 
     <script>
-        
         document.getElementById('name-box').innerText = MY_PANEL.name;
         document.getElementById('subtitle-box').innerText = MY_PANEL.subtitle;
         document.getElementById('desc-box').innerText = MY_PANEL.description;
@@ -97,7 +94,7 @@
         MY_PANEL.links.forEach(item => {
             const a = document.createElement('a');
             a.href = item.url;
-            a.target = "_blank";
+            a.target = "_blank"; // Эта настройка открывает ссылки в новой вкладке, что тоже помогает не сбивать сессию
             a.className = `btn ${item.style}`;
             a.innerText = item.name;
             
@@ -105,18 +102,18 @@
             box.appendChild(a);
         });
     </script>
-
+ 
 <!-- Подключение Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
+ 
 <script>
-  
+  // Вставьте сюда ваши полные ключи:
   const SUPABASE_URL = 'https://dxnlsfvkhbxvviudlcwl.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_PVvVrFoRxuyJddEXlYcyHA_7IazujCl';
-
+ 
   const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-  
+ 
+  // Генерация и получение уникального ID сессии
   function getSessionId() {
     let id = sessionStorage.getItem('sid');
     if (!id) {
@@ -125,10 +122,10 @@
     }
     return id;
   }
-
+ 
   const sessionId = getSessionId();
-
-  
+ 
+  // Отправка визита
   async function trackVisit() {
     try {
       await _supabase.from('visits').insert([
@@ -139,11 +136,11 @@
         }
       ]);
     } catch (e) {
-      
+      // Ошибки игнорируются, чтобы не ломать сайт пользователю
     }
   }
-
-  
+ 
+  // Отправка клика
   async function trackClick(buttonId) {
     try {
       await _supabase.from('clicks').insert([
@@ -153,18 +150,22 @@
         }
       ]);
     } catch (e) {
-      
+      // Ошибки игнорируются
     }
   }
-
-  
+ 
+  // Вешаем слушатели на все кнопки
   document.querySelectorAll('.btn').forEach(function (btn) {
     btn.addEventListener('click', function () {
       trackClick(btn.dataset.trackId);
     });
   });
-
-  trackVisit();
+ 
+  // Запускаем отправку визита ТОЛЬКО если в этой сессии мы его еще не отправляли
+  if (!sessionStorage.getItem('visited')) {
+    trackVisit();
+    sessionStorage.setItem('visited', 'true');
+  }
 </script>
 </body>
 </html>
