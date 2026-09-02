@@ -104,8 +104,28 @@
         });
     </script>
 
-    <!-- GoatCounter Analytics -->
-    <script data-goatcounter="https://salvador.goatcounter.com/count"
-            async src="//gc.zgo.at/count.js"></script>
-</body>
-</html>
+<!-- Подключение Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+  // Вставьте сюда ваши скопированные значения (внутри одинарных кавычек)
+  const SUPABASE_URL = https://dxnlsfvkhbxvviudlcwl.supabase.co;
+  const SUPABASE_KEY = sb_publishable_PVvVrFoRxuyJddEXlYcyHA_7IazujCl;
+
+  const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  async function trackVisit() {
+    try {
+      await _supabase.from('visits').insert([
+        {
+          page: window.location.pathname,
+          referrer: document.referrer || 'direct'
+        }
+      ]);
+    } catch (e) {
+      // Ошибки глушатся, сайт ни при каких условиях не зависнет
+    }
+  }
+
+  trackVisit();
+</script>
