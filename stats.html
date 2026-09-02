@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Статистика визитки</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f7fb; color: #333; padding: 20px; }
+    .container { max-width: 900px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+    h1 { margin-top: 0; font-size: 22px; }
+    .stats-summary { display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; }
+    .card { flex: 1; min-width: 200px; background: #edf2f7; padding: 15px; border-radius: 8px; text-align: center; }
+    .card-number { font-size: 28px; font-weight: bold; color: #2b6cb0; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; text-align: left; }
+    th, td { padding: 12px; border-bottom: 1px solid #e2e8f0; }
+    th { background: #f8fafc; color: #64748b; font-weight: 600; }
+    .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+    .badge-visit { background: #e0f2fe; color: #0369a1; }
+    .badge-click { background: #fef3c7; color: #b45309; }
+    #login-box { text-align: center; padding: 50px 0; }
+    input { padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; outline: none; margin-right: 10px; }
+    button { padding: 10px 18px; background: #2563eb; color: #fff; border: none; border-radius: 6px; cursor: pointer; }
+    button:hover { background: #1d4ed8; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Окно ввода пароля -->
+  <div id="login-box">
+    <h2>Вход в статистику</h2>
+    <input type="password" id="pass" placeholder="Введите пароль">
+    <button onclick="checkPassword()">Войти</button>
+  </div>
+
+  <!-- Блок с данными -->
+  <div id="dashboard" style="display: none;">
+    <h1>Статистика посещений и кликов</h1>
+    
+    <div class="stats-summary">
+      <div class="card">
+        <div>Просмотров страницы</div>
+        <div class="card-number" id="views-count">0</div>
+      </div>
+      <div class="card">
+        <div>Кликов по кнопкам</div>
+        <div class="card-number" id="clicks-count">0</div>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Время (Урал)</th>
+          <th>Событие</th>
+          <th>Детали (Кнопка / Источник)</th>
+        </tr>
+      </thead>
+      <tbody id="table-body">
+        <tr><td colspan="3" style="text-align: center;">Загрузка данных...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  // 1. ВСТАВЬТЕ ВАШИ КЛЮЧИ СЮДА:
+  const SUPABASE_URL = 'https://dxnlsfvkhbxvviudlcwl.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_PVvVrFoRxuyJddEXlYcyHA_7IazujCl';
+  
+  // 2. ПРИДУМАЙТЕ ПАРОЛЬ ДЛЯ ВХОДА (по умолчанию 123):
+  const MY_PASSWORD = '123'; 
+
+  // Словарь для красивого отображения названий кнопок
+  const buttonNames = {
+    'vk': 'VK (Фотография)',
+    'tg': 'Telegram',
+    'max': 'Макс',
+    'dzen': 'Дзен-канал',
+    'donate': 'Поддержать ₽'
+  };
+
+  const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  function checkPassword() {
+    const inputPass = document.getElementById('pass').value;
+    if (inputPass === MY_PASSWORD) {
+      document.getElementById('login-box').style.display = 'none';
+      document.getElementById('dashboard').style.display = 'block';
+      loadData();
+    } else {
+      alert('Неверный пароль!');
+    }
+  }
+
+  async function loadData() {
+    // Скачиваем последние 100 визитов
+    const { data: visitsData, error: visitsError } = await _supabase
+      .from('visits').select('*').order('created_at', { ascending: false }).limit(100);
+
+    // Скачиваем последние 100 кликов
+    const { data: clicksData, error: clicksError } = await _supabase
+      .from('clicks').select('*').order('created_at', { ascending: false }).limit(100);
+
+    if (visitsError || clicksError) {
+      alert('Ошибка загрузки данных из Supabase!');
+      return;
+    }
+
+    document.getElementById('views-count').innerText = visitsData.length;
+    document.getElementById('clicks-count').innerText = clicksData.length;
+
+    // Объединяем визиты и клики в один список
+    let allEvents = [];
+    
+    visitsData.forEach(v => {
+      allEvents.push({
+        time: v.created_at,
+        type: 'visit',
+        label: 'Открытие визитки',
+        detail: v.referrer === 'direct' ? 'Прямой заход / QR' : v.referrer
+      });
+    });
+
+    clicksData.forEach(c => {
+      const prettyName = buttonNames[c.button_id] || c.button_id;
+      allEvents.push({
+        time: c.created_at,
+        type: 'click',
+        label: 'Клик по кнопке',
+        detail: prettyName
+      });
+    });
+
+    // Сортируем общий список по времени (самые новые сверху)
+    allEvents.sort((a, b) => new Date(b.time) - new Date(a.time));
+
+    // Отрисовываем таблицу
+    const tbody = document.getElementById('table-body');
+    tbody.innerHTML = '';
+
+    if (allEvents.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="3" style="text-align: center;">Пока нет данных</td></tr>';
+      return;
+    }
+
+    allEvents.forEach(event => {
+      const date = new Date(event.time).toLocaleString('ru-RU', { 
+        timeZone: 'Asia/Yekaterinburg',
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit', second: '2-digit'
+      });
+
+      const badgeClass = event.type === 'click' ? 'badge-click' : 'badge-visit';
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${date}</td>
+        <td><span class="badge ${badgeClass}">${event.label}</span></td>
+        <td>${event.detail}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+</script>
+</body>
+</html>
