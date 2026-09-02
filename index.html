@@ -140,8 +140,15 @@
     }
   }
  
-  // Отправка клика
+let isClickBlocked = false; // Флаг блокировки частых кликов
+
   async function trackClick(buttonId) {
+    // Если клик уже был менее 2 секунд назад — просто игнорируем его
+    if (isClickBlocked) return;
+    
+    isClickBlocked = true;
+    setTimeout(() => { isClickBlocked = false; }, 2000); // Разблокируем через 2 секунды
+
     try {
       await _supabase.from('clicks').insert([
         {
@@ -150,7 +157,7 @@
         }
       ]);
     } catch (e) {
-      // Ошибки игнорируются
+      
     }
   }
  
