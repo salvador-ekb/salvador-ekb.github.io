@@ -21,17 +21,43 @@
     input { padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; outline: none; margin-right: 10px; }
     button { padding: 10px 18px; background: #2563eb; color: #fff; border: none; border-radius: 6px; cursor: pointer; }
     button:hover { background: #1d4ed8; }
+
+    /* --- НОВЫЕ ПРАВИЛА ДЛЯ АДАПТАЦИИ ПОД ПК И СМАРТФОНЫ --- */
+    
+    /* Скрываем мобильные элементы на ПК */
+    @media (min-width: 601px) {
+      .mobile-only { display: none; }
+    }
+
+    /* Настройки для смартфонов (экраны до 600px шириной) */
+    @media (max-width: 600px) {
+      body { padding: 8px; } /* Уменьшаем отступы по бокам экрана */
+      .container { padding: 15px 10px; } /* Раздвигаем белую плашку шире */
+      
+      table { 
+        font-size: 12px; /* Чуть уменьшаем шрифт в таблице */
+        table-layout: fixed; /* Фиксируем ширину, чтобы длинные ссылки не ломали таблицу */
+      }
+      th, td { 
+        padding: 10px 4px; /* Делаем ячейки плотнее друг к другу */
+        word-wrap: break-word; /* Разрешаем перенос длинных слов/ссылок */
+        overflow-wrap: break-word;
+      }
+      
+      /* Скрываем элементы, предназначенные только для ПК */
+      .desktop-only { display: none; }
+    }
   </style>
 </head>
 <body>
-
+ 
 <div class="container">
   <div id="login-box">
     <h2>Вход в статистику</h2>
     <input type="password" id="pass" placeholder="Введите пароль">
     <button onclick="checkPassword()">Войти</button>
   </div>
-
+ 
   <div id="dashboard" style="display: none;">
     <h1>Статистика посещений</h1>
     
@@ -45,7 +71,7 @@
         <div class="card-number" id="clicks-count">0</div>
       </div>
     </div>
-
+ 
     <table>
       <thead>
         <tr>
@@ -60,7 +86,7 @@
     </table>
   </div>
 </div>
-
+ 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   // 1. ВСТАВЬТЕ ВАШИ КЛЮЧИ СЮДА:
@@ -69,17 +95,19 @@
   
   // 2. ПАРОЛЬ ДЛЯ ВХОДА:
   const MY_PASSWORD = 'stat.tarlton'; 
-
+ 
+  // Названия кнопок переделаны: текст внутри <span class="desktop-only">...</span> 
+  // будет стерт на телефонах, но останется на ПК
   const buttonNames = {
-    'vk': 'VK (Фотография)',
+    'vk': 'VK<span class="desktop-only"> (Фотография)</span>',
     'tg': 'Telegram',
     'max': 'Макс',
-    'dzen': 'Дзен-канал',
-    'donate': 'Поддержать ₽'
+    'dzen': 'Дзен<span class="desktop-only">-канал</span>',
+    'donate': 'Поддержать<span class="desktop-only"> ₽</span>'
   };
-
+ 
   const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
+ 
   function checkPassword() {
     const inputPass = document.getElementById('pass').value;
     if (inputPass === MY_PASSWORD) {
@@ -90,39 +118,43 @@
       alert('Неверный пароль!');
     }
   }
-
+ 
   async function loadData() {
     const { data: visitsData, error: visitsError } = await _supabase
       .from('visits').select('*').order('created_at', { ascending: false }).limit(200);
-
+ 
     const { data: clicksData, error: clicksError } = await _supabase
-      .from('clicks').select('*').order('created_at', { ascending: true }); // Клики берем по возрастанию, чтобы выводить в порядке нажатия
-
+      .from('clicks').select('*').order('created_at', { ascending: true });
+ 
     if (visitsError || clicksError) {
       alert('Ошибка загрузки данных из Supabase!');
       return;
     }
-
+ 
     const uniqueVisits = new Set(visitsData.map(v => v.session_id)).size;
     document.getElementById('views-count').innerText = uniqueVisits;
     document.getElementById('clicks-count').innerText = clicksData.length;
-
-    // Создаем объект для группировки данных по сессиям (посетителям)
+ 
     const sessions = {};
-
-    // Шаг 1: Записываем всех посетителей
+ 
+    // Шаг 1: Записываем посетителей
     visitsData.forEach(v => {
+      // Очищаем ссылку: убираем http://, https:// и www.
+      let cleanReferrer = v.referrer === 'direct' ? 'Прямой заход / QR' : v.referrer;
+      if (cleanReferrer !== 'Прямой заход / QR') {
+          cleanReferrer = cleanReferrer.replace(/^https?:\/\//, '').replace(/^www\./, '');
+      }
+
       sessions[v.session_id] = {
         time: v.created_at,
-        referrer: v.referrer === 'direct' ? 'Прямой заход / QR' : v.referrer,
+        referrer: cleanReferrer,
         clicks: []
       };
     });
-
-    // Шаг 2: Распределяем клики по этим посетителям
+ 
+    // Шаг 2: Распределяем клики
     clicksData.forEach(c => {
       const sId = c.session_id;
-      // Если клик есть, а визита в последних 200 нет, создаем для него пустую запись-заглушку
       if (!sessions[sId]) {
         sessions[sId] = {
           time: c.created_at,
@@ -130,42 +162,45 @@
           clicks: []
         };
       }
-      // Добавляем красивое имя кнопки в массив кликов этого посетителя
       sessions[sId].clicks.push(buttonNames[c.button_id] || c.button_id);
     });
-
-    // Шаг 3: Превращаем объект в массив и сортируем по времени визита (самые новые сверху)
+ 
+    // Шаг 3: Сортируем
     const groupedEvents = Object.values(sessions).sort((a, b) => new Date(b.time) - new Date(a.time));
-
+ 
     const tbody = document.getElementById('table-body');
     tbody.innerHTML = '';
-
+ 
     if (groupedEvents.length === 0) {
       tbody.innerHTML = '<tr><td colspan="3" style="text-align: center;">Пока нет данных</td></tr>';
       return;
     }
-
+ 
     // Шаг 4: Отрисовываем таблицу
     groupedEvents.forEach(session => {
-      const date = new Date(session.time).toLocaleString('ru-RU', { 
-        timeZone: 'Asia/Yekaterinburg',
-        day: '2-digit', month: '2-digit', year: 'numeric',
-        hour: '2-digit', minute: '2-digit'
+      // Генерируем два формата даты: длинную для ПК и короткую для смартфона
+      const timeZoneOptions = { timeZone: 'Asia/Yekaterinburg' };
+      
+      const dateFull = new Date(session.time).toLocaleString('ru-RU', { 
+        ...timeZoneOptions, day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
       });
+      
+      const dateShort = new Date(session.time).toLocaleString('ru-RU', { 
+        ...timeZoneOptions, day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit'
+      }).replace(',', ''); // убираем запятую для еще большей компактности
+      
+      const dateHtml = `<span class="desktop-only">${dateFull}</span><span class="mobile-only">${dateShort}</span>`;
 
-      // Собираем HTML-код для столбца "Нажатые кнопки"
       let clicksHtml = '';
       if (session.clicks.length > 0) {
-        // Если кнопки нажимались, выводим их блоками
         clicksHtml = session.clicks.map(btn => `<span class="badge badge-click">${btn}</span>`).join(' ');
       } else {
-        // Если человек зашел и вышел
         clicksHtml = '<span class="no-clicks">Без кликов</span>';
       }
-
+ 
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td>${date}</td>
+        <td>${dateHtml}</td>
         <td>${session.referrer}</td>
         <td>${clicksHtml}</td>
       `;
