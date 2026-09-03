@@ -107,9 +107,9 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
  
 <script>
-  // Вставьте сюда ваши полные ключи:
-  const SUPABASE_URL = 'https://dxnlsfvkhbxvviudlcwl.supabase.co';
-  const SUPABASE_KEY = 'sb_publishable_PVvVrFoRxuyJddEXlYcyHA_7IazujCl';
+  
+  const SUPABASE_URL = atob('aHR0cHM6Ly9keG5sc2Z2a2hieHZ2aXVkbGN3bC5zdXBhYmFzZS5jbw==');
+  const SUPABASE_KEY = atob('c2JfcHVibGlzaGFibGVfUFZ2VnJGb1J4dXlKZGRFWGxZY3lIQV83SWF6dWpDbA==');
  
   const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
  
@@ -165,14 +165,14 @@
     }
   }
  
-  // Вешаем слушатели на все кнопки
+  
   document.querySelectorAll('.btn').forEach(function (btn) {
     btn.addEventListener('click', function () {
       trackClick(btn.dataset.trackId);
     });
   });
  
-  // Запускаем отправку визита ТОЛЬКО если в этой сессии мы его еще не отправляли
+  
   if (!sessionStorage.getItem('visited')) {
     trackVisit();
     sessionStorage.setItem('visited', 'true');
